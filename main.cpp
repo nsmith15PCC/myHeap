@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
     int theRandNum;
     srand(time(NULL));
     cout<<"Unsorted numbers: "<<endl;
-    for(int i = 0; i < 9; i++)
+    for(int i = 0; i < 25; i++)
     {
         theRandNum = rand()% 100 + 1;
         if(!(i%5))

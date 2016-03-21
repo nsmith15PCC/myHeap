@@ -33,37 +33,37 @@ struct node
 template<typename T>
 class heap
 {
-    public:
-        heap();
-        heap(const T &data);
-        ~heap();
-        heap(const heap<T> &other);
-        heap<T>& operator=(const heap<T> &other);
+public:
+    heap();
+    heap(const T &data);
+    ~heap();
+    heap(const heap<T> &other);
+    heap<T>& operator=(const heap<T> &other);
 
-        bool empty();
-        size_t size();
-        void clear();
+    bool empty();
+    size_t size();
+    void clear();
 
-        heap<T>& operator<<(const T & data);
-        heap<T>& operator>>(T & data);
+    heap<T>& operator<<(const T & data);
+    heap<T>& operator>>(T & data);
 
-        template<typename U>
-        friend
-        ostream& operator<<(ostream& out, const heap<U> &h);
+    template<typename U>
+    friend
+    ostream& operator<<(ostream& out, const heap<U> &h);
 
-        template<typename U>
-        friend
-        istream& operator>>(istream& in, heap<U> &h);
+    template<typename U>
+    friend
+    istream& operator>>(istream& in, heap<U> &h);
 
-    private:
-        node<T> *root;
-        size_t lastEntered;
+private:
+    node<T> *root;
+    size_t lastEntered;
 
-        void copy(heap<T> *r, heap<T> *&myR);
+    void copy(heap<T> *r, heap<T> *&myR);
 
-        node<T>* findParent(size_t n);
-        void reheapifyUp();
-        void reheapifyDown();
+    node<T>* findParent(size_t n);
+    void reheapifyUp(size_t last);
+    void reheapifyDown(node<T> *parent);
 };
 
 template<typename T>
@@ -136,7 +136,7 @@ heap<T>& heap<T>::operator<<(const T & data)
     {
         node<T> *parent = findParent(lastEntered);
         parent->child[lastEntered & 1] = newNode;
-        reheapifyUp();
+        reheapifyUp(lastEntered);
     }
     return *this;
 }
@@ -146,7 +146,6 @@ heap<T>& heap<T>::operator>>(T &data)
 {
     if(empty())
         throw HEAP_EMPTY;
-//    cout<<"Starting >>\n";
     data = root->data;
     if(!root->child[0])
     {
@@ -155,25 +154,20 @@ heap<T>& heap<T>::operator>>(T &data)
         lastEntered--;
         return *this;
     }
-//    cout<<"Finding parent\n";
     node<T>* parent = findParent(lastEntered);
-//    cout<<"Swapping with root\n";
     swap(root->data, parent->child[lastEntered & 1]->data);
-//    cout<<"Delete lastEntered\n";
     delete parent->child[lastEntered & 1];
     parent->child[lastEntered & 1] = NULL;
     lastEntered--;
-//    cout<<"reHeapify down\n";
-    reheapifyDown();
+    reheapifyDown(root);
     return *this;
-//    cout<<"Ending >>\n";
 }
 
 template<typename T>
 void heap<T>::copy(heap<T> *r, heap<T> *&myR)
 {
     if(!r)
-       return;
+        return;
     myR = new node<T>*(r->data);\
     for(size_t i = 0; i < 2; ++i)
         if(r->child[i])
@@ -185,65 +179,47 @@ node<T>* heap<T>::findParent(size_t n)
 {
     size_t mask = 1 << (int)(log2((double)n)-1);
     node<T>* parent = root;
-//    cout<<endl<<"mask = "<<mask<<endl;
     if(n == 1)
         return NULL;
-    while(mask>1)
+    while(mask > 1)
     {
-        parent = parent->child[(mask & n) > 0];
-        mask /= 2;
+        parent = parent->child[(mask & n)>0];
+        mask >>= 1;
     }
     return parent;
 }
 
 template<typename T>
-void heap<T>::reheapifyUp()
+void heap<T>::reheapifyUp(size_t last)
 {
-    bool notDone = true;
-    size_t last = lastEntered;
-
-    node<T> *parent = findParent(lastEntered),
-            *child;
-    while(notDone && parent)
+    if (last > 1)
     {
-        child = parent->child[last & 1];
-        if(child->data > parent->data)
-        {
-            swap(child->data,parent->data);
-            child = parent;
-            last/=2;
-            parent = findParent(last);
-        }
-        else
-          notDone = false;
+        node<T> *parent = findParent(last),
+                *child = parent->child[last & 1];
+        if (parent->data < child->data)
+            swap (parent->data, child->data);
+        reheapifyUp(last/2);
     }
+    else
+        return;
 }
 
 template<typename T>
-void heap<T>::reheapifyDown()
+void heap<T>::reheapifyDown(node<T> *parent)
 {
-    bool notDone = true;
-    node<T>* parent = root;
-    while(parent->child[0] && notDone )
-        if(!parent->child[1])
+    if (parent->child[0])
+    {
+        node<T> *toSwap = parent->child[0];
+        if (parent->child[1])
+            toSwap = parent->child[parent->child[0]->data < parent->child[1]->data];
+        if (parent->data < toSwap->data)
         {
-           //cout<<"Has only 1 child\n";
-           if(parent->child[0]->data > parent->data)
-              swap(parent->child[0]->data, parent->data);
-           notDone = false;
+            swap(parent->data, toSwap->data);
+            reheapifyDown(toSwap);
         }
-        else
-        {
-           // cout<<"Has two children\n";
-            size_t toSwap = parent->child[1]->data > parent->child[0]->data;
-            if(parent->data < parent->child[toSwap]->data)
-            {
-                swap(parent->data, parent->child[toSwap]->data);
-                parent = parent->child[toSwap];
-            }
-            else
-                notDone = false;
-        }
+    }
+    else
+        return;
 }
 
 template<typename U>
