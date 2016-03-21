@@ -179,7 +179,6 @@ node<T>* heap<T>::findParent(size_t n)
 {
     size_t mask = 1 << (int)(log2((double)n)-1);
     node<T>* parent = root;
-//    cout<<endl<<"mask = "<<mask<<endl;
     if(n == 1)
         return NULL;
     while(mask > 1)
