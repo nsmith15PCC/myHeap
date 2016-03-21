@@ -152,6 +152,7 @@ heap<T>& heap<T>::operator>>(T &data)
     {
         delete root;
         root = NULL;
+        lastEntered--;
         return *this;
     }
 //    cout<<"Finding parent\n";
@@ -184,12 +185,13 @@ node<T>* heap<T>::findParent(size_t n)
 {
     size_t mask = 1 << (int)(log2((double)n)-1);
     node<T>* parent = root;
+//    cout<<endl<<"mask = "<<mask<<endl;
     if(n == 1)
         return NULL;
     while(mask>1)
     {
-        parent = parent->child[(mask & lastEntered) > 0];
-        mask >>= 1;
+        parent = parent->child[(mask & n) > 0];
+        mask /= 2;
     }
     return parent;
 }
