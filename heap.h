@@ -146,7 +146,6 @@ heap<T>& heap<T>::operator>>(T &data)
 {
     if(empty())
         throw HEAP_EMPTY;
-    //    cout<<"Starting >>\n";
     data = root->data;
     if(!root->child[0])
     {
@@ -155,18 +154,13 @@ heap<T>& heap<T>::operator>>(T &data)
         lastEntered--;
         return *this;
     }
-    //    cout<<"Finding parent\n";
     node<T>* parent = findParent(lastEntered);
-    //    cout<<"Swapping with root\n";
     swap(root->data, parent->child[lastEntered & 1]->data);
-    //    cout<<"Delete lastEntered\n";
     delete parent->child[lastEntered & 1];
     parent->child[lastEntered & 1] = NULL;
     lastEntered--;
-    //    cout<<"reHeapify down\n";
     reheapifyDown(root);
     return *this;
-    //    cout<<"Ending >>\n";
 }
 
 template<typename T>
@@ -190,8 +184,8 @@ node<T>* heap<T>::findParent(size_t n)
         return NULL;
     while(mask > 1)
     {
-        parent = parent->child[(mask & n) > 0];
-        mask /= 2;
+        parent = parent->child[(mask & n)>0];
+        mask >>= 1;
     }
     return parent;
 }
@@ -209,25 +203,6 @@ void heap<T>::reheapifyUp(size_t last)
     }
     else
         return;
-
-    //    bool notDone = true;
-    //    size_t last = lastEntered;
-
-    //    node<T> *parent = findParent(lastEntered),
-    //            *child;
-    //    while(notDone && parent)
-    //    {
-    //        child = parent->child[last & 1];
-    //        if(child->data > parent->data)
-    //        {
-    //            swap(child->data,parent->data);
-    //            child = parent;
-    //            last/=2;
-    //            parent = findParent(last);
-    //        }
-    //        else
-    //          notDone = false;
-    //    }
 }
 
 template<typename T>
@@ -237,7 +212,7 @@ void heap<T>::reheapifyDown(node<T> *parent)
     {
         node<T> *toSwap = parent->child[0];
         if (parent->child[1])
-            toSwap = parent->child[parent->child[0]->data <= parent->child[0]->data];
+            toSwap = parent->child[parent->child[0]->data < parent->child[1]->data];
         if (parent->data < toSwap->data)
         {
             swap(parent->data, toSwap->data);
@@ -246,30 +221,6 @@ void heap<T>::reheapifyDown(node<T> *parent)
     }
     else
         return;
-
-
-    //    bool notDone = true;
-    //    node<T>* parent = root;
-    //    while(parent->child[0] && notDone )
-    //        if(!parent->child[1])
-    //        {
-    //           //cout<<"Has only 1 child\n";
-    //           if(parent->child[0]->data > parent->data)
-    //              swap(parent->child[0]->data, parent->data);
-    //           notDone = false;
-    //        }
-    //        else
-    //        {
-    //           // cout<<"Has two children\n";
-    //            size_t toSwap = parent->child[1]->data > parent->child[0]->data;
-    //            if(parent->data < parent->child[toSwap]->data)
-    //            {
-    //                swap(parent->data, parent->child[toSwap]->data);
-    //                parent = parent->child[toSwap];
-    //            }
-    //            else
-    //                notDone = false;
-    //        }
 }
 
 template<typename U>
